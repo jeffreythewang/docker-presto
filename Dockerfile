@@ -9,7 +9,7 @@ FROM zhicwu/java:8
 MAINTAINER Zhichun Wu <zhicwu@gmail.com>
 
 # Set Environment Variables
-ENV PRESTO_VERSION=0.146 PRESTO_HOME=/presto BASE_URL=https://repo1.maven.org/maven2/com/facebook/presto
+ENV PRESTO_VERSION=0.196 PRESTO_HOME=/presto BASE_URL=https://repo1.maven.org/maven2/com/facebook/presto
 
 # Download Presto
 RUN apt-get update \
@@ -32,6 +32,15 @@ RUN chmod +x presto-*executable.jar \
 	&& ln -s presto-benchmark-driver-${PRESTO_VERSION}-executable.jar benchmark-driver \
 	&& wget -P plugin/hive-hadoop2/ https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/hive-json-serde/hive-json-serde-0.2.jar \
 	&& cd -
+
+# Generate Java Keystore
+RUN keytool -genkeypair -keystore /etc/presto_keystore.jks -dname "CN=10.5.0.5, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown" -keypass prestodb -storepass prestodb -keyalg RSA -alias presto -ext SAN=ip:10.5.0.5
+
+# Install Kerberos
+RUN apt-get update \
+  && apt-get install -y krb5-user
+
+COPY ./krb-conf/client/krb5.conf /etc/krb5.conf
 
 WORKDIR $PRESTO_HOME
 VOLUME ["$PRESTO_HOME/etc", "$PRESTO_HOME/data"]

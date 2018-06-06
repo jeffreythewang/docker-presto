@@ -62,7 +62,7 @@ setup_dir() {
     sed -ri 's/^(node.environment=).*/\1'"$NODE_ENV"'/' "$CONF_DIR/node.properties"
     sed -ri 's|^(node.data-dir=).*|\1'"/presto/data"'|' "$CONF_DIR/node.properties"
   fi
-  
+
   if [ ! -f $CONF_DIR/jvm.config ]; then
     warn "jvm.config not found, generate one with default settings..."
     echo "-server" > $CONF_DIR/jvm.config
@@ -74,6 +74,8 @@ setup_dir() {
     echo "-XX:+HeapDumpOnOutOfMemoryError" >> $CONF_DIR/jvm.config
 #    echo "-XX:OnOutOfMemoryError=kill -9 %p" >> $CONF_DIR/jvm.config
     echo "-XX:OnOutOfMemoryError=kill -9 0" >> $CONF_DIR/jvm.config
+    echo "-Dsun.security.krb5.debug=true" >> $CONF_DIR/jvm.config
+    echo "-Dlog.enable-console=true" >> $CONF_DIR/jvm.config
     cat $CONF_DIR/jvm.config
   fi
 
@@ -92,7 +94,8 @@ setup_dir() {
 
   if [ ! -f $CONF_DIR/log.properties ]; then
     warn "log.properties not found, generate one with default settings..."
-    echo "com.facebook.presto=INFO" > $CONF_DIR/log.properties
+    echo "com.facebook.presto=DEBUG" > $CONF_DIR/log.properties
+    echo "com.facebook.presto.server.security=DEBUG" >> $CONF_DIR/log.properties
     cat $CONF_DIR/log.properties
   fi
 
@@ -120,7 +123,7 @@ start_presto() {
   # references: http://stackoverflow.com/questions/24288616/permission-denied-on-accessing-host-directory-in-docker
   docker run -d --name="$PRESTO_ALIAS" --restart=always -h presto -p $SERV_PORT:8080 \
     -v $CONF_DIR:/presto/etc:Z -v $DATA_DIR:/presto/data:Z \
-    zhicwu/presto:$PRESTO_TAG
+    jeffreyw/presto:$PRESTO_TAG
 
   info "Try 'docker logs -f \"$PRESTO_ALIAS\"' to see if this works"
 }
