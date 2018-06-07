@@ -121,7 +121,7 @@ start_presto() {
 
   # use --privileged=true has the potential risk of causing clock drift
   # references: http://stackoverflow.com/questions/24288616/permission-denied-on-accessing-host-directory-in-docker
-  docker run -d --name="$PRESTO_ALIAS" --restart=always -h presto -p $SERV_PORT:8080 \
+  docker run -d --name="$PRESTO_ALIAS" --restart=always -h my-presto.example.com -p $SERV_PORT:8080 \
     -v $CONF_DIR:/presto/etc:Z -v $DATA_DIR:/presto/data:Z \
     jeffreyw/presto:$PRESTO_TAG
 
